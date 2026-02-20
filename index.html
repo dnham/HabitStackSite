@@ -1056,8 +1056,8 @@
                         <h1>Turn Daily Habits<br>Into <span class="highlight">Guilt-Free Rewards</span></h1>
                         <p class="hero-sub">Habit Stack is the iOS app that lets you reward yourself for building great habits. Assign a dollar amount to each habit, complete it daily, and build a fun fund you can spend guilt-free.</p>
                         <div class="hero-ctas">
-                            <form class="email-form" data-email-form>
-                                <input type="email" class="email-input" placeholder="Enter your email" required>
+                            <form class="email-form" action="https://formspree.io/f/xlgwwvjp" method="POST" data-email-form>
+                                <input type="email" name="email" class="email-input" placeholder="Enter your email" required>
                                 <button type="submit" class="email-submit">Notify Me</button>
                             </form>
                         </div>
@@ -1355,8 +1355,8 @@
                 <div class="cta-inner reveal">
                     <h2>Coming Soon</h2>
                     <p>Be the first to know when Habit Stack launches. Drop your email and we'll notify you on day one.</p>
-                    <form class="email-form" style="margin: 0 auto;" data-email-form>
-                        <input type="email" class="email-input" placeholder="Enter your email" required>
+                    <form class="email-form" style="margin: 0 auto;" action="https://formspree.io/f/xlgwwvjp" method="POST" data-email-form>
+                        <input type="email" name="email" class="email-input" placeholder="Enter your email" required>
                         <button type="submit" class="email-submit">Notify Me</button>
                     </form>
                     <p class="email-note">We'll never spam you.</p>
@@ -1424,13 +1424,34 @@
             document.querySelectorAll('[data-email-form]').forEach(function(form) {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    var wrapper = form.parentNode;
-                    var note = wrapper.querySelector('.email-note');
-                    var msg = document.createElement('p');
-                    msg.className = 'email-success';
-                    msg.textContent = "Thanks! We'll be in touch.";
-                    form.replaceWith(msg);
-                    if (note) note.remove();
+                    var btn = form.querySelector('.email-submit');
+                    btn.disabled = true;
+                    btn.textContent = 'Sending...';
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: { 'Accept': 'application/json' }
+                    }).then(function(response) {
+                        var wrapper = form.parentNode;
+                        var note = wrapper.querySelector('.email-note');
+                        var msg = document.createElement('p');
+                        if (response.ok) {
+                            msg.className = 'email-success';
+                            msg.textContent = "Thanks! We'll be in touch.";
+                            form.replaceWith(msg);
+                            if (note) note.remove();
+                        } else {
+                            msg.className = 'email-success';
+                            msg.style.color = '#ff3b30';
+                            msg.textContent = 'Something went wrong. Please try again.';
+                            form.replaceWith(msg);
+                            if (note) note.remove();
+                        }
+                    }).catch(function() {
+                        btn.disabled = false;
+                        btn.textContent = 'Notify Me';
+                        alert('Network error — please try again.');
+                    });
                 });
             });
         })();
